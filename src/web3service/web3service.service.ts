@@ -1,14 +1,14 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { config } from "dotenv";
-import { WebSocketProvider, Contract, formatUnits} from "ethers";
-import abi from "../../abi/usdt.json";
+import { WebSocketProvider, Contract, formatUnits, ContractEventPayload } from "ethers";
+import abi from "../../utils/abi/usdt.json";
 
 config();
 
 
 const {
-    WEB_SOCKET_URL,
-    SMART_CONTRACT_ADDRESS
+  WEB_SOCKET_URL,
+  SMART_CONTRACT_ADDRESS
 } = process.env;
 
 @Injectable()
@@ -28,18 +28,15 @@ export class Web3serviceService implements OnModuleInit {
   }
 
   private subscribeToEvents() {
-    this.contract.on("Transfer", (from, to, value, event) => {
-        console.log(
-            JSON.stringify(
-                {
-                    from,
-                    to,
-                    value: formatUnits(value,6),
-                    event
-                }
-            )
-        );
-    } );
+    this.contract.on("Transfer", (from, to, value, event: ContractEventPayload) => {
+      console.log(
+        {
+          from,
+          to,
+          value: formatUnits(value, 6)
+        }
+      );
+    });
   }
 
 
