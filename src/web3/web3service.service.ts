@@ -2,6 +2,8 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { config } from "dotenv";
 import { WebSocketProvider, Contract, formatUnits, ContractEventPayload } from "ethers";
 import abi from "../../utils/abi/usdt.json";
+import { MongodbService } from 'src/mongodb/mongodb.service';
+import IEvent from 'src/mongodb/dto/IEvent';
 
 config();
 
@@ -12,9 +14,10 @@ const {
 } = process.env;
 
 @Injectable()
-export class Web3serviceService implements OnModuleInit {
+export class Web3Service implements OnModuleInit {
   private web3: WebSocketProvider;
   private contract: Contract;
+  private dbService: MongodbService = new MongodbService();
 
   async onModuleInit() {
     // Connect to Ethereum node using WebSocket
@@ -24,20 +27,22 @@ export class Web3serviceService implements OnModuleInit {
 
     this.contract = new Contract(SMART_CONTRACT_ADDRESS ?? "", abi, this.web3);
 
-    this.subscribeToEvents();
-  }
-
-  private subscribeToEvents() {
-    this.contract.on("Transfer", (from, to, value, event: ContractEventPayload) => {
-      console.log(
-        {
+    this.contract.on("Transfer", async (
+      from: string, 
+      to: string, 
+      value: number,
+      eventPayload: ContractEventPayload
+    ) => {
+      const event: IEvent = {
           from,
           to,
-          value: formatUnits(value, 6)
+          value: Number(formatUnits(value, 6)),
+          name: eventPayload.eventName,
+          txHash: eventPayload.log.transactionHash
         }
-      );
+      console.log(event);
+
+      await this.dbService.insert(event);
     });
   }
-
-
 }
