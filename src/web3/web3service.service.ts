@@ -1,12 +1,8 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { config } from "dotenv";
 import { WebSocketProvider, Contract, formatUnits, ContractEventPayload } from "ethers";
 import abi from "../../utils/abi/usdt.json";
 import { MongodbService } from 'src/mongodb/mongodb.service';
 import IEvent from 'src/mongodb/dto/IEvent';
-
-config();
-
 
 const {
   WEB_SOCKET_URL,
