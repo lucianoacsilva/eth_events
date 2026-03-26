@@ -16,8 +16,6 @@ export class MongodbService {
     private client: MongoClient = new MongoClient(
         `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:27017/`
     );
-    
-
     async insert(event: IEvent) {
         try {
             await this.client.connect();
@@ -25,13 +23,22 @@ export class MongodbService {
             await this.client.db("eventsdb").
                 collection("Events")
                 .insertOne(event);
-            
+
         } catch (error) {
             console.log(error);
-        } 
+        }
+    }
 
+    async get(query: IEvent) {
+        try {
+            await this.client.connect();
 
-        
+            return await this.client.db("eventsdb").
+                collection("Events").find(query).toArray();
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 
 }
