@@ -18,21 +18,17 @@ export class MongodbService {
     );
     async insert(event: IEvent) {
         try {
-            await this.client.connect();
-
             await this.client.db("eventsdb").
                 collection("Events")
                 .insertOne(event);
 
         } catch (error) {
             console.log(error);
-        }
+        } 
     }
 
     async get(query: IEvent) {
         try {
-            await this.client.connect();
-
             return await this.client.db("eventsdb").
                 collection("Events").find(query).toArray();
 
