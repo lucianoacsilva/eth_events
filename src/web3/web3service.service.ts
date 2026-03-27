@@ -16,7 +16,6 @@ export class Web3Service implements OnModuleInit {
   private dbService: MongodbService = new MongodbService();
 
   async onModuleInit() {
-    // Connect to Ethereum node using WebSocket
     this.web3 = new WebSocketProvider(
       WEB_SOCKET_URL ?? ""
     );
@@ -28,19 +27,22 @@ export class Web3Service implements OnModuleInit {
       async (
         eventPayload: ContractEventPayload
       ) => {
-        const event: IEvent = {
-          from: eventPayload.args[0],
-          to: eventPayload.args[1],
-          value: Number(formatUnits(eventPayload.args[2], 6)),
-          name: eventPayload.eventName,
-          txHash: eventPayload.log.transactionHash
+        try {
+          const event: IEvent = {
+            from: eventPayload.args[0],
+            to: eventPayload.args[1],
+            value: Number(formatUnits(eventPayload.args[2], 6)),
+            name: eventPayload.eventName,
+            txHash: eventPayload.log.transactionHash
+          }
+
+          console.log(event);
+
+          await this.dbService.insert(event);
+        } catch (error) {
+          console.log(error);
         }
-
-        console.log(event);
-
-        await this.dbService.insert(event);
       }
     )
-    .catch(error => console.log(error));
   }
 }
