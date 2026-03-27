@@ -23,22 +23,24 @@ export class Web3Service implements OnModuleInit {
 
     this.contract = new Contract(SMART_CONTRACT_ADDRESS ?? "", abi, this.web3);
 
-    this.contract.on("Transfer", async (
-      from: string, 
-      to: string, 
-      value: number,
-      eventPayload: ContractEventPayload
-    ) => {
-      const event: IEvent = {
-          from,
-          to,
-          value: Number(formatUnits(value, 6)),
+    this.contract.on(
+      this.contract.filters.Transfer(),
+      async (
+        eventPayload: ContractEventPayload
+      ) => {
+        const event: IEvent = {
+          from: eventPayload.args[0],
+          to: eventPayload.args[1],
+          value: Number(formatUnits(eventPayload.args[2], 6)),
           name: eventPayload.eventName,
           txHash: eventPayload.log.transactionHash
         }
-      console.log(event);
 
-      await this.dbService.insert(event);
-    });
+        console.log(event);
+
+        await this.dbService.insert(event);
+      }
+    )
+    .catch(error => console.log(error));
   }
 }
